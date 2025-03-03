@@ -10,7 +10,6 @@ async function sendMessage() {
     inputField.value = ""; 
     chatBox.scrollTop = chatBox.scrollHeight; 
 
-    // Gửi tin nhắn đến API FastAPI
     try {
         const response = await fetch("http://0.0.0.0:8001/chat", {
             method: "POST",
@@ -18,12 +17,29 @@ async function sendMessage() {
             body: JSON.stringify({ text: userMessage })
         });
 
-        const data = await response.json();
-        const botReply = data.response || "Xin lỗi, tôi chưa hiểu.";
+        if (!response.body) throw new Error("Phản hồi không có nội dung");
 
-        // Thêm phản hồi của chatbot
-        chatBox.innerHTML += `<div class="chat-message bot">${botReply}</div>`;
-        chatBox.scrollTop = chatBox.scrollHeight; 
+        // Tạo phần tử mới cho tin nhắn bot
+        const botMessageElem = document.createElement("div");
+        botMessageElem.classList.add("chat-message", "bot");
+        chatBox.appendChild(botMessageElem);
+
+        // Đọc dữ liệu streaming
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let botReply = "";
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            botReply += decoder.decode(value, { stream: true });
+
+            // Cập nhật nội dung tin nhắn bot theo thời gian thực
+            botMessageElem.innerHTML = botReply;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
     } catch (error) {
         chatBox.innerHTML += `<div class="chat-message bot">Lỗi kết nối!</div>`;
     }
