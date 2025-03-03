@@ -6,7 +6,7 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain import hub
 
 class RAGGenerator:
-    def __init__(self, documents, model_name="gpt-3.5-turbo", temperature=0):
+    def __init__(self, documents, model_name="gpt-4", temperature=0):
         """
         Khởi tạo hệ thống RAG (Retrieval-Augmented Generation).
         
