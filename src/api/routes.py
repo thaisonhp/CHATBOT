@@ -2,12 +2,11 @@ from fastapi import APIRouter ,UploadFile , File
 # from src.services.query_handler import QueryHandler
 from src.api.schemas import QueryRequest, QueryResponse
 from io import BytesIO
-from models.indexing import load_pdf_from_file
-from services.process_pdf import process_documents
-from services.retrivaler import rag_pipeline
+from services.indexing import load_pdf_from_file
+from services.retriever import rag_pipeline
 from fastapi import HTTPException 
 from fastapi.responses import StreamingResponse
-
+from utils.process_pdf import process_pdf
 router = APIRouter()
 
 
@@ -33,6 +32,7 @@ async def chat(request: QueryRequest):
 
     
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
+from fastapi.responses import JSONResponse
 
 @router.post("/upload-pdf/")
 async def upload_pdf(file: UploadFile = File(...)):
@@ -45,9 +45,14 @@ async def upload_pdf(file: UploadFile = File(...)):
     pdf_file = BytesIO(contents)  
     docs = load_pdf_from_file(pdf_file)  
     print(f"📄 Số trang đọc được: {len(docs)}")
-    
-    retriever = process_documents(documents=docs)
-    return retriever
+
+    retriever = process_pdf(documents=docs)
+
+    # Thay vì trả về retriever (Chroma), chỉ lấy dữ liệu cần thiết
+    response_data = {"status": "success", "message": "Tải file thành công!"}
+
+    return JSONResponse(content=response_data)
+
 
 
 

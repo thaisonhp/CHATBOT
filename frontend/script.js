@@ -37,10 +37,50 @@ async function sendMessage() {
 
             // Cập nhật nội dung tin nhắn bot theo thời gian thực
             botMessageElem.innerHTML = botReply;
-            chatBox.scrollTop = chatBox.scrollHeight;
+            setTimeout(() => {
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 50);
+            
         }
 
     } catch (error) {
         chatBox.innerHTML += `<div class="chat-message bot">Lỗi kết nối!</div>`;
     }
 }
+
+async function uploadFile() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "application/pdf";
+
+    input.onchange = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const response = await fetch("http://localhost:8001/upload-pdf/", {
+                method: "POST",
+                body: formData
+            });
+
+            const result = await response.json();
+            console.log("📂 Kết quả trả về:", result);
+
+            if (response.ok) {
+                alert("📂 Tải lên thành công!");
+            } else {
+                alert("❌ Lỗi tải lên: " + result.detail);
+            }
+        } catch (error) {
+            console.error("❌ Lỗi:", error);
+            alert("❌ Lỗi kết nối đến server!");
+        }
+    };
+
+    input.click();
+}
+
+

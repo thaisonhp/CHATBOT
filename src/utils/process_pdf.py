@@ -3,7 +3,7 @@ from langchain_community.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
 # vectorstore = Chroma.from_documents(documents=splits, 
 #                                     embedding=OpenAIEmbeddings())
-def process_documents(documents, embedding_model=None):
+def process_pdf(documents, embedding_model=None):
     print(f"Nhận {len(documents)} tài liệu để xử lý.")  # Kiểm tra dữ liệu đầu vào
     if not documents:
         print("⚠️ Không có tài liệu nào để xử lý!")
@@ -21,4 +21,3 @@ def process_documents(documents, embedding_model=None):
     
     print(f"ChromaDB hiện có {vectorstore._collection.count()} vector.")
     return vectorstore.as_retriever()
-
