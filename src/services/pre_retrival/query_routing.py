@@ -1,39 +1,38 @@
 from langchain.tools import Tool
+from utils.pre_retrival import vector_search
+from langchain_openai import ChatOpenAI
+
+# Khởi tạo mô hình GPT-4 với nhiệt độ thấp để có đầu ra ổn định
+llm = ChatOpenAI(model_name="gpt-4", temperature=0)
 
 def query_routing(query: str):
-    """Hàm định tuyến truy vấn dựa trên nội dung"""
-    if "solve" in query or "calculate" in query or any(c.isdigit() for c in query):
-        return "math_solver"
-    elif "latest" in query or "news" in query:
-        return "web_search"
-    elif "database" in query or "SQL" in query:
-        return "sql_query"
-    elif "translate" in query:
-        return "translation"
-    elif "summary" in query:
-        return "text_summarization"
-    elif "document" in query or "pdf" in query:
-        return "document_reader"
-    elif "image" in query:
-        return "image_recognition"
-    else:
-        return "vector_search"  # Mặc định tìm trong database
+    """Sử dụng LLM để phân loại truy vấn vào các nhóm phù hợp"""
+    categories = [
+        "vector_search", "web_search", "math_solver", "sql_query",
+        "translation", "text_summarization", "document_reader",
+        "image_recognition"
+    ]
+    
+    prompt = (
+        f"Hãy phân loại câu hỏi này vào một trong các danh mục sau: {categories}. Hãy ưu tiên vector_search nếu không có trong database thì hẵng web_search"
+        f"Chỉ trả về tên danh mục, không có văn bản khác.\n\nCâu hỏi: {query}"
+    )
+
+    result = llm.invoke(prompt)
+    print(result.content)
+    if result in categories:
+        return result
+    return "vector_search"  # Mặc định nếu mô hình không phân loại đúng
 
 # Định nghĩa các công cụ
 tools = {
     "vector_search": vector_search,
-    "web_search": web_search,
-    "math_solver": math_solver,
-    "sql_query": sql_query,
-    "translation": translation,
-    "text_summarization": text_summarization,
-    "document_reader": document_reader,
-    "image_recognition": image_recognition,
+    # "web_search": web_search,
+    # "math_solver": math_solver,
+    # "sql_query": sql_query,
+    # "translation": translation,
+    # "text_summarization": text_summarization,
+    # "document_reader": document_reader,
+    # "image_recognition": image_recognition,
 }
 
-# Gọi đúng hàm theo loại truy vấn
-query = "Translate 'hello' to French"
-selected_tool = query_routing(query)
-response = tools[selected_tool](query)
-
-print(f"Using {selected_tool}: {response}")
