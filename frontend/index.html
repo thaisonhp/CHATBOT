@@ -5,16 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chatbot</title>
     <link rel="stylesheet" href="style.css"> <!-- Import file CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha512-NhSC1YmyruXifcj/KFRWoC561YpHpc5Jtzgvbuzx5VozKpWvQ+4nXhPdFgmx8xqexRcpAglTj9sIBWINXa8x5w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 </head>
 <body>
-    <div class="chat-container">
-        <div class="chat-header">Chatbot</div>
-        <div class="chat-box" id="chat-box">
-            <div class="chat-message bot">Xin chào! Tôi có thể giúp gì?</div>
+    <header>
+        <div class="box-item">
+            <i class="fa-solid fa-bars"></i>
+            <i class="fa-solid fa-message"></i>
         </div>
+        <div class="title">HITGPT</div>
+        <div class="avatar">
+            <img src="/Users/luongthaison/Documents/Third_years_student/Project/CHAT_BOT/frontend/avatar_son.jpg" alt="">
+        </div>
+    </header>
+    <div class="chat-box" id="chat-box">
+        <div class="chat-message bot">Xin chào! Tôi có thể giúp gì?</div>
+    </div>
+    <div class="chat-container">
         <div class="chat-input">
-            <input type="text" id="user-input" placeholder="Nhập tin nhắn...">
-            <button onclick="sendMessage()">Gửi</button>
+            <input class="text" type="text" id="user-input" placeholder="Nhập tin nhắn...">
+            <div class="function_list">
+                <button class="send" onclick="sendMessage()" style="border-radius: 5px;">Gửi</button>
+                <button class="upload" onclick="uploadFile()" style="border-radius: 5px;">UpLoad</button>
+            </div>
         </div>
     </div>
     <script src="script.js"></script> <!-- Import file JavaScript -->
