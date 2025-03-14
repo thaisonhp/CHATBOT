@@ -2,7 +2,7 @@ from typing import List, Dict, Any
 from langchain_experimental.text_splitter import SemanticChunker
 from langchain_openai.embeddings import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter, RecursiveCharacterTextSplitter
-
+import os 
 class TextChunker:
     """
     Lớp hỗ trợ chunking văn bản với nhiều phương pháp khác nhau.
@@ -23,7 +23,7 @@ class TextChunker:
         self.kwargs: Dict[str, Any] = kwargs
 
         if method == "semantic":
-            model: str = kwargs.get("model", "text-embedding-ada-002")
+            model: str = os.getenv("MODEL_EMBEDDEING")
             buffer_size: int = kwargs.get("buffer_size", 1)
             breakpoint_threshold_amount: int = kwargs.get("breakpoint_threshold_amount", 70)
             embedding_model = OpenAIEmbeddings(model=model)
@@ -63,7 +63,7 @@ class TextChunker:
             List[str]: Danh sách các đoạn văn bản sau khi chunk.
         """
         if self.method == "semantic":
-            chunks = self.chunker.create_documents([text])
+            chunks = self.chunker.create_documents(text)
             return [chunk.page_content for chunk in chunks]
         else:
             return self.chunker.split_text(text)
