@@ -1,1 +1,2 @@
 from services.pre_retrival.query_routing import query_routing, tools
+from services.pre_retrival.generate_query import generate_queries

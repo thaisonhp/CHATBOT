@@ -9,6 +9,8 @@ from fastapi.responses import StreamingResponse
 from utils.process_pdf import process_pdf
 from services.indexing import TextChunker
 from services.share import Embedder , ChromaDBIndexer
+from hashlib import md5
+
 router = APIRouter()
 
 
@@ -47,21 +49,28 @@ async def upload_file(file: UploadFile = File(...)):
     Returns:
         dict: Kết quả xử lý file.
     """
-    # bước 1 : load doc 
-    docs = process_file(file) # lấy ra văn bản text , thông số ... 
-    # Bước 2 : phân loại tài liệu để áp dụng các phương pháp chunk phù hợp 
-     
-    # bước 3 : chunking 
-    chunker = TextChunker(method='semantic') 
-    doc_chunked  = chunker.chunk(docs) # doc_chunked : List[str] 
-    # bước 4 : embeding 
+    # Bước 1: Load nội dung tài liệu
+    docs = process_file(file)  # Lấy văn bản từ file
+
+    # Bước 2: Chia nhỏ tài liệu (Chunking)
+    chunker = TextChunker(method='semantic')
+    doc_chunked = chunker.chunk(docs)  # List[str]
+
+    if not doc_chunked:
+        raise HTTPException(status_code=400, detail="Không tìm thấy nội dung hợp lệ sau khi chia nhỏ.")
+
+    # Bước 3: Tạo IDs cho từng đoạn văn bản
+    ids = [md5(text.encode()).hexdigest() for text in doc_chunked]
+
+    # Bước 4: Chuyển văn bản thành vector embeddings
     embedder = Embedder()
-    text_embedded = embedder.embed_text(doc_chunked) # List[float]
-    # bước 5 : lưu vào chroma db 
+    text_embedded = embedder.embed_text(doc_chunked)  # List[list[float]]
+
+    # Bước 5: Lưu vào ChromaDB
     indexer = ChromaDBIndexer(collection_name="langchain")
-    indexer.add_texts(text_embedded, ids)
-    response_data = {"status": "success", "message": "Tải file thành công!"}
-    return response_data
+    indexer.add_texts(doc_chunked, text_embedded, ids)
+
+    return JSONResponse(content={"status": "success", "message": "Tải file thành công!"})
 
 
 

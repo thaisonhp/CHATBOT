@@ -2,6 +2,7 @@ import chromadb
 from chromadb.utils import embedding_functions
 from langchain_openai import OpenAIEmbeddings
 from typing import List, Optional
+import uuid
 
 class ChromaDBIndexer:
     """
@@ -20,20 +21,37 @@ class ChromaDBIndexer:
         self.embedding_model = OpenAIEmbeddings(model=model_name)
         self.collection = self.client.get_or_create_collection(collection_name)
 
-    def add_texts(self, texts: List[str], ids: List[str]):
-        """
-        Thêm văn bản và embedding vào ChromaDB.
+    def add_texts(self, texts: List[str], embeddings: List[List[float]], ids: List[str]):
+            """
+            Thêm văn bản và embedding vào ChromaDB. Nếu ID bị trùng, tự động tạo ID mới.
 
-        Args:
-            texts (List[str]): Danh sách các văn bản cần lưu.
-            ids (List[str]): Danh sách ID tương ứng với văn bản.
-        """
-        embeddings = self.embedding_model.embed_documents(texts)
-        self.collection.add(
-            ids=ids,
-            documents=texts,
-            embeddings=embeddings
-        )
+            Args:
+                texts (List[str]): Danh sách văn bản.
+                embeddings (List[List[float]]): Danh sách vector embeddings tương ứng.
+                ids (List[str]): Danh sách ID tương ứng với văn bản.
+            """
+            if len(texts) != len(embeddings) or len(texts) != len(ids):
+                raise ValueError("Số lượng texts, embeddings và ids phải bằng nhau!")
+
+            # Lấy danh sách ID đã tồn tại trong collection
+            existing_ids = set(self.collection.get()["ids"])  # Lấy danh sách ID hiện có
+
+            # Xử lý từng ID để tránh trùng lặp
+            new_ids = []
+            for original_id in ids:
+                new_id = original_id
+                while new_id in existing_ids:  # Nếu trùng thì tạo ID mới
+                    new_id = f"{original_id}_{uuid.uuid4().hex[:8]}"  # Gắn thêm 8 ký tự UUID
+                new_ids.append(new_id)
+                existing_ids.add(new_id)  # Cập nhật danh sách ID đã tồn tại
+
+            # Thêm vào collection với ID mới
+            self.collection.add(
+                ids=new_ids,
+                documents=texts,
+                embeddings=embeddings
+            )
+
 
     def query(self, query_text: str, top_k: int = 5) -> List[str]:
         """
